@@ -1,0 +1,63 @@
+#
+units           real
+atom_style      charge
+
+neighbor        1.5    bin 
+neigh_modify    delay 0 every 1 check yes
+
+read_data    salt.data
+#replicate 2 2 2
+
+# water is SPC/E here
+set type 1 charge -1.0
+set type 2 charge +1.0
+
+mass 1 35.453
+mass 2 22.9898
+
+# Defining the pair style. In this case is a LJ with cutoff and Coulombic interaction is treated not
+# with a cutoff but with PPPM
+pair_style lj/cut/coul/long 10.0
+kspace_style pppm 1.0e-5
+# These are the coefficient for the LJ interaction. The first two number are the index
+# referring to the atomic species in the .data file (index must match the atoms. double check!)
+# the symbol * can be used to say that the interaction is valid for all the atoms in the system.
+pair_coeff 1 1 0.012785 4.830 # Cl
+pair_coeff 2 2 0.3526418 2.160 # Na
+pair_modify tail yes mix arithmetic
+
+# Define the screen output of the simulation. The first command define the stride at which
+# the information are printed. The second style define what have to be printed.
+thermo          10
+thermo_style    custom step pe etotal temp press lx vol
+thermo_modify   flush yes
+min_style cg
+min_modify line quadratic
+
+# Multiple minimisations to prevent trapping
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax iso 0 vmax 0.01
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax iso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax iso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax iso 0 vmax 0.01
+#
+replicate 4 4 4
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax iso 0 vmax 0.01
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax iso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax iso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax iso 0 vmax 0.01
+#
+# #  --------------------- dumping xyz files ---------------------
+dump 1 all custom 1 out.lammpstrj element x y z
+dump_modify 1 element Cl Na sort id
+#
+run 1
+#
+write_data      final-config.dat

@@ -1,0 +1,51 @@
+echo            screen
+variable        dcdfreq index 0 # never print
+variable        thermofreq index 100 # never print
+units           real # Angstroms, fs, kcal/mol, atomsphere
+boundary        p p p
+
+newton          off
+pair_style      lj/charmm/coul/long 10 12
+pair_modify     mix arithmetic
+
+atom_style      full
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+special_bonds   charmm
+improper_style  harmonic
+timestep        0.25
+
+read_data       ../input-config.dat
+#replicate 2 2 2
+
+
+kspace_style    pppm 1e-5
+
+neighbor        2 bin
+neigh_modify    delay 5 every 1
+
+
+group reduce type 7
+
+velocity        all create TTTTT 94221
+
+## SHAKE used for water only (angle type 9)
+#fix             1 all shake 1e-6 500 ${dcdfreq} m 1.008 a 9
+
+#fix             2 all npt temp TTTTT TTTTT 100.0 iso 1.0 1.0 1000.0
+fix             2 all nph aniso 1.0 1.0 1000.0
+fix             3 all langevin TTTTT TTTTT 100.0 76869
+
+
+
+thermo          ${thermofreq}
+thermo_style    custom step time temp pe press vol #ebond eangle edihed eimp evdwl ecoul elong
+
+
+run 5000
+reset_timestep  0
+
+run             1000000
+
+write_data      final-config.dat

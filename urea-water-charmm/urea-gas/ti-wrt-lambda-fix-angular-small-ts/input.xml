@@ -1,0 +1,42 @@
+<simulation verbosity="low">
+    <output prefix="urea">
+        <properties stride="10" filename="out">  [ step, time{picosecond}, conserved, temperature{kelvin}, potential, pot_component_raw(0), pot_component_raw(1)] </properties>
+        <trajectory filename="pos" stride="5000" > positions </trajectory>
+   </output>
+   <total_steps> 5000000 </total_steps>
+   <prng> <seed> 86997 </seed> </prng>
+   <ffsocket name="lmp" mode="unix" pbc="true">
+        <address> urea-AW-TTTTT </address>
+   </ffsocket>
+   <ffdebye name="debye">
+        <hessian shape="(24,24)" mode="file"> ../harmonic.hess </hessian>
+        <x_reference mode="file" units="angstrom"> ../minimised-structure-mod.xyz  </x_reference>
+   </ffdebye>
+    <system>
+      <initialize nbeads="1">
+        <file mode="xyz"> ../init.xyz </file>
+        <velocities mode="thermal" units="kelvin"> TTTTT </velocities>
+      </initialize>
+    <forces>
+        <force forcefield="lmp" weight="AW"> </force>
+        <force forcefield="debye" weight="HW"> </force>
+    </forces>
+    <motion mode="dynamics">
+      <dynamics mode="nvt">
+      <thermostat mode='multi'>
+             <thermostat mode='svr'>
+                 <tau units="femtosecond"> 10 </tau>
+               </thermostat>
+      <thermostat mode="langevin">
+        <tau units="femtosecond"> 100 </tau>
+      </thermostat>
+     </thermostat>
+            <timestep units="femtosecond"> 0.25 </timestep>
+        </dynamics>
+        <fixcom> True </fixcom>
+    </motion>
+    <ensemble>
+        <temperature units="kelvin"> TTTTT </temperature>
+    </ensemble>
+    </system>
+</simulation>

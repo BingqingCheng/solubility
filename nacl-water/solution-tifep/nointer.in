@@ -1,0 +1,22 @@
+units           real # Angstroms, fs, kcal/mol, atomsphere
+boundary        p p p
+atom_style      full
+
+neighbor        1.5    bin
+neigh_modify    delay 0 every 1 check yes
+
+read_data       ../input-config.dat
+
+include ../nointer.pp
+
+neighbor        2 bin
+neigh_modify    delay 0 every 1
+
+thermo          100
+thermo_style    custom step time temp pe press vol ebond eangle edihed eimp evdwl ecoul elong
+
+## SHAKE used for water
+# fix             sh all shake 0.0001 20 0 b 1 a 1
+
+fix 1 all ipi nointer-HHHHH-RRRRR 32346 unix
+run 10000000

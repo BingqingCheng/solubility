@@ -1,0 +1,34 @@
+units           real # Angstroms, fs, kcal/mol, atomsphere
+boundary        p p p
+
+newton          off
+pair_style      lj/charmm/coul/long/soft 1 0.5 10 10 12
+
+atom_style      full
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+special_bonds   charmm
+improper_style  harmonic
+timestep        1
+
+read_data       ../input-config.dat
+
+include ../pair-LLLLL.pp
+#include zero_bond_coeff.pp
+
+
+kspace_style    pppm 1e-5
+kspace_modify gewald 0.1
+
+neighbor        2 bin
+neigh_modify    delay 5 every 1
+
+thermo          100
+thermo_style    custom step time temp pe press vol ebond eangle edihed eimp evdwl ecoul elong
+
+## SHAKE used for water only (angle type 9)
+#fix             1 all shake 1e-6 500 ${dcdfreq} m 1.008 a 9
+
+fix 1 all ipi l0-RRRRR 32346 unix
+run 10000000

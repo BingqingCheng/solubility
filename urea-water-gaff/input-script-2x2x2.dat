@@ -1,0 +1,43 @@
+echo            screen
+variable        dcdfreq index 0 # never print
+variable        thermofreq index 100 # never print
+units           real # Angstroms, fs, kcal/mol, atomsphere
+boundary        p p p
+
+atom_style      full
+include ../gaff.pp
+
+timestep        1
+
+read_data       input-config.dat
+replicate 2 2 2
+
+
+kspace_style    pppm 1e-5
+
+neighbor        2 bin
+neigh_modify    delay 5 every 1
+
+
+group reduce type 3 6
+
+
+velocity        all create 303.15 94221
+
+fix             2 all npt temp 293.15 293.15 100.0 iso 1.0 1.0 1000.0
+
+
+
+thermo          ${thermofreq}
+thermo_style    custom step time temp pe press vol #ebond eangle edihed eimp evdwl ecoul elong
+
+
+run 10000
+reset_timestep  0
+
+dump 1 reduce custom 1000 out.lammpstrj element x y z
+dump_modify 1 element H H C N O O sort id
+
+run             5000000
+
+write_data      final-config.dat

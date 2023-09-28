@@ -1,0 +1,26 @@
+<simulation mode="static" verbosity="high">
+    <output>
+      <trajectory filename="pos" stride="1000" flush="1" > positions </trajectory>
+    </output>
+
+   <total_steps> 100000 </total_steps>
+   <prng> <seed> 8686 </seed> </prng>
+   <ffsocket name="lmp" mode="unix" pbc="true">
+        <address> I-paracetamol </address>
+   </ffsocket>
+   <system>
+        <initialize nbeads="1"> 
+            <file mode="xyz"> minimized.xyz</file>
+        </initialize>
+        <forces>
+            <force forcefield="lmp"> </force>
+        </forces>
+        <motion mode="vibrations">
+            <vibrations mode="fd">
+                <pos_shift> 0.02 </pos_shift>
+                <energy_shift> 0.02 </energy_shift>
+                <asr> crystal  </asr>
+            </vibrations>
+        </motion>
+    </system>
+</simulation>

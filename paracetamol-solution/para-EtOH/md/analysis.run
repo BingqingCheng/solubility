@@ -1,0 +1,19 @@
+#!/bin/bash
+#SBATCH --account T2-CS061-CPU
+#SBATCH --partition cclake #skylake
+#SBATCH --nodes 1
+#SBATCH --ntasks 1
+#SBATCH --time 00:10:00
+
+module purge
+module load rhel7/default-peta4
+
+source ~/.bashrc
+
+#python ../get-sk-3d.py
+
+#wait
+
+bash ../get-avg-Sk.sh
+
+wait

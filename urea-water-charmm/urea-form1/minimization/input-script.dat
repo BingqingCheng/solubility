@@ -1,0 +1,62 @@
+echo            screen
+variable        thermofreq index 10
+units           real
+boundary        p p p
+
+newton          off
+pair_style      lj/charmm/coul/long 10 12
+pair_modify     mix arithmetic
+
+atom_style      full
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+special_bonds   charmm
+improper_style  harmonic
+timestep        1
+
+read_data       input-config-form1.dat
+
+
+kspace_style    pppm 1e-5
+
+neighbor        2 bin
+neigh_modify    delay 5 every 1
+
+
+# replicate 2 2 2
+
+thermo          ${thermofreq}
+thermo_style    custom step time temp pe press vol ebond eangle edihed eimp evdwl ecoul elong cella cellb cellc cellalpha cellbeta cellgamma
+
+
+min_style cg
+min_modify line quadratic
+
+# Multiple minimisations to prevent trapping
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+
+replicate 4 4 4
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+minimize 1.0e-8 1.0e-6 10000 1000000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+minimize 1.0e-10 1.0e-8 10000 100000
+fix boxrelax all box/relax aniso 0 vmax 0.01
+
+#  --------------------- dumping xyz files ---------------------
+dump 1 all custom 1 out.lammpstrj element x y z
+dump_modify 1 element H C N O sort id
+
+run 1
+
+write_data      final-config.dat
